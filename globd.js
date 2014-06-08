@@ -7,7 +7,25 @@ var log = require('npmlog');
 
 //log.level = 'verbose'; //! accept cli arg
 
-log.verbose("",        __dirname + '/plugins/glob/public');
+function asyncTryCatch(tryFunction, catchFunction, keepAliveOnHandled)
+{
+    process.on('uncaughtException', function(ex)
+    {// hook onto uncaughtException -> execute catch
+        var handled = catchFunction(ex);
+        if (!handled)
+        {// NOT handled -> throw
+            throw ex;
+        }
+        else if (handled && !keepAliveOnHandled)
+        {// handled but NOT staying alive -> exit
+            process.exit(1);
+        }
+    });
+    tryFunction(); // try the function
+}
+
+log.verbose("", __dirname + '/plugins/glob/public');
+
 app.use(express.static(__dirname + '/plugins/glob/public'));
 
 function getGlobResult(pattern)
@@ -86,7 +104,26 @@ io.on('connection', function(socket)
 
 });
 
-http.listen(8080, function()
-{
-    log.info("", 'listening on localhost:8080');
-});
+asyncTryCatch(
+    function()
+    {
+        http.listen(8080, function()
+        {
+            log.info("listening on localhost:8080");
+        });
+    },
+    function(ex)
+    {
+        if (ex.message.indexOf('listen EADDRINUSE') > -1)
+        {// (node v0.10.28) http://nodejs.org/api/net.html#net_server_listen_port_host_backlog_callback
+            log.error("port 8080 is already bound. kill the other process first.");
+            return true;
+        }
+        else
+        {
+            throw ex;
+        }
+    }
+);
+
+log.info("this line is executed");

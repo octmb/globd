@@ -1,0 +1,66 @@
+* {
+   margin     : 0;
+   padding    : 0;
+   box-sizing : border-box;
+}
+
+@fontFamily: Consolas, "Courier New", monospace;
+@fontSize: 16px;
+
+.setFont() {
+   font-size   : @fontSize;
+   font-family : @fontFamily;
+}
+
+html {
+   padding   : 1em;
+   max-width : 960px;
+   margin    : 0 auto;
+   .setFont();
+   overflow  : -moz-scrollbars-vertical;
+   overflow  : scroll;
+}
+body {
+}
+h1 {
+   font-family : Helvetica;
+   font-size   : 26px;
+   margin      : 0 0 0.2em 0em;
+   color       : #bebebe;
+}
+form {
+   padding : 3px;
+   width   : 100%;
+}
+
+#files {
+   list-style-type : none;
+   margin          : 0;
+   padding         : 1em 0 0 0;
+}
+
+table#glob-patterns {
+   width : 100%;
+
+   .header .pattern {
+      width          : 100%;
+      text-align     : left;
+      padding-left   : 5px;
+      padding-bottom : 5px;
+   }
+}
+
+.glob-pattern {
+   width : 100%;
+
+   input.pattern {
+      width   : 100%;
+      padding : 10px;
+      .setFont();
+   }
+}
+
+.glob-result {
+   padding : 5px 10px;
+   .setFont();
+}

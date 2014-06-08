@@ -1,0 +1,27 @@
+{
+    "name": "globd",
+    "version": "0.0.1-alpha",
+    "description": "View glob pattern source results instantly.",
+    "dependencies": {
+        "express": "~4.1.1",
+        "glob": "^4.0.2",
+        "npmlog": "^0.1.0",
+        "request": "^2.36.0",
+        "socket.io": "~1.0"
+    },
+    "devDependencies": {
+        "express": "~4.1.1",
+        "glob": "^4.0.2",
+        "npmlog": "^0.1.0",
+        "request": "^2.36.0",
+        "socket.io": "~1.0",
+        "gulp": "^3.7.0",
+        "gulp-less": "^1.2.3"
+    },
+    "keywords": [
+        "globd",
+        "viewer"
+    ],
+    "author": "Jacob Berger",
+    "license": "MIT"
+}

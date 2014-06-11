@@ -30,31 +30,38 @@ var clientDir = __dirname + '/plugins/globd/public';
 log.verbose(clientDir);
 app.use(express.static(clientDir));
 
-io.on('connection', function(socket)
-{// client connected -> hook events
-    log.verbose(helpers.getLocalTime() + ': connected');
-    socket.on('disconnect', function()
-    {// client disconnected (browser session ended)
-        log.verbose("", helpers.getLocalTime() + ': DISconnected');
-    });
+function listenForClients()
+{
+    io.on('connection', function(socket)
+    {// client connected -> hook events
+        log.verbose(helpers.getLocalTime() + ': connected');
+        socket.on('disconnect', function()
+        {// client disconnected (browser session ended)
+            log.verbose("", helpers.getLocalTime() + ': DISconnected');
+        });
 
-    socket.on('globd', function(globPatterns)
-    {// event from client
-        var event = 'globd.result:' + globPatterns;
-        var result = globd.getGlobResult(globPatterns);
-        io.sockets.emit(event, result);
-    });
+        globd.listenToClient(
+            socket,
+            function onResultProcessed(event, result)
+            {
+                io.sockets.emit(event, result);
+            }
+        );
 
-});
+    });
+}
+listenForClients();
+
+function listenOnPort(port)
+{
+    http.listen(port, function()
+    {
+        log.info("listening on localhost:8080");
+    });
+}
 
 asyncTryCatch(
-    function()
-    {
-        http.listen(8080, function()
-        {
-            log.info("listening on localhost:8080");
-        });
-    },
+    listenOnPort(8080),
     function(ex)
     {
         if (ex.message.indexOf('listen EADDRINUSE') > -1)

@@ -4,8 +4,10 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var glob = require('glob');
 var log = require('npmlog');
+var helpers = require('./lib/helpers.js');
+var globd = require('./plugins/globd/index.js');
 
-//log.level = 'verbose'; //! accept cli arg
+log.level = 'verbose'; //! accept cli arg
 
 function asyncTryCatch(tryFunction, catchFunction, keepAliveOnHandled)
 {
@@ -24,81 +26,22 @@ function asyncTryCatch(tryFunction, catchFunction, keepAliveOnHandled)
     tryFunction(); // try the function
 }
 
-log.verbose("", __dirname + '/plugins/glob/public');
-
-app.use(express.static(__dirname + '/plugins/glob/public'));
-
-function getGlobResult(pattern)
-{
-    var files = null, error = null;
-    try
-    {
-        files = glob.sync(pattern/*, options*/);
-    }
-    catch (ex)
-    {
-        if (ex.message === "must provide pattern")
-        {// catch empty case (glob.js, Line 132
-            files = [];
-        }
-        else
-        {
-            log.error("", ex.message);
-            error = ex;
-            throw ex;
-        }
-    }
-
-    if (files)
-    {
-        files.forEach(function(file) {log.verbose(pattern, file);});// log each file
-    }
-    return  {
-        error: error,
-        pattern: pattern,
-        files: files
-    };
-}
+var clientDir = __dirname + '/plugins/globd/public';
+log.verbose(clientDir);
+app.use(express.static(clientDir));
 
 io.on('connection', function(socket)
-{// client connected (via localhost:8080)
-    function getLocalTime()
-    {
-        return new Date().toLocaleTimeString();
-    }
-
-    log.verbose("", getLocalTime() + ': connected');
+{// client connected -> hook events
+    log.verbose(helpers.getLocalTime() + ': connected');
     socket.on('disconnect', function()
     {// client disconnected (browser session ended)
-        log.verbose("", getLocalTime() + ': DISconnected');
+        log.verbose("", helpers.getLocalTime() + ': DISconnected');
     });
 
-    socket.on('glob', function(globPatterns)
+    socket.on('globd', function(globPatterns)
     {// event from client
-        log.verbose("", globPatterns);
-
-        var result = [];
-
-        if (globPatterns instanceof  Array)
-        {
-            log.verbose("", "'glob' object is Array");
-            result = globPatterns.map(
-                function(pattern, index, array)
-                {
-                    log.verbose("", pattern);
-                    return getGlobResult(pattern);
-                }
-            );
-
-        }
-        else
-        {
-            log.error("", "'glob' object sent to server must be an Array. actual value: " + globPatterns);
-        }
-
-        // result = array of { globResult }
-
-        var event = 'glob.result:' + globPatterns;
+        var event = 'globd.result:' + globPatterns;
+        var result = globd.getGlobResult(globPatterns);
         io.sockets.emit(event, result);
     });
 
@@ -125,5 +68,3 @@ asyncTryCatch(
         }
     }
 );
-
-log.info("this line is executed");

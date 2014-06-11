@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+<head>
+   <title>globd</title>
+
+   <link rel="stylesheet" href="css/bootstrap.css"/>
+   <link rel="stylesheet" href="css/glob.css"/>
+   <link rel="icon" href="favicon.ico" type="image/x-icon"/>
+
+</head>
+<body>
+   <h1>globd</h1>
+
+   <div id="error"></div>
+   <table id="glob-patterns">
+      <tr class="glob-pattern">
+         <td><input class="pattern form-control" data-glob-pattern-index="0"
+                    placeholder="*.*" autofocus="true" autocomplete="off"/></td>
+      </tr>
+   </table>
+
+   <ul id="files"></ul>
+
+   <script src="/socket.io/socket.io.js"></script>
+   <script src="js/vendor/jquery-2.1.1.js"></script>
+   <script src="js/model.js"></script>
+   <script src="js/interface.js"></script>
+   <script src="js/helpers.js"></script>
+   <script src="js/view.js"></script>
+</body>
+</html>

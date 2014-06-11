@@ -46,7 +46,7 @@ table#glob-patterns .header .pattern {
   font-family: Consolas, "Courier New", monospace;
 }
 .glob-result {
-  padding: 5px 10px;
+  padding: 2px 10px 0 10px;
   font-size: 16px;
   font-family: Consolas, "Courier New", monospace;
 }

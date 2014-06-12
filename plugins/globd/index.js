@@ -39,7 +39,7 @@ exports.getGlobResult = function(globPatterns)
     }
 };
 
-exports.printGitIgnored = function()
+exports.getIgnoredFilesAndDirs = function()
 {
     function getFilesAndDirsFromGitCleanNDX(gitCleanNDXoutput)
     {
@@ -47,8 +47,9 @@ exports.printGitIgnored = function()
          Would remove node_modules/request
          Would remove node_modules/socket.io
          "*/
-        return  gitCleanNDXoutput
-            .split('\n')
+        var splitOnLineBreaks = gitCleanNDXoutput.split('\n');
+        splitOnLineBreaks.pop(); // Last is 'undefined'
+        return splitOnLineBreaks
             .map(
             function(element, index, array)
             {
@@ -57,27 +58,44 @@ exports.printGitIgnored = function()
         );
     }
 
-    child = exec(
-        'git clean -ndX',
-        function(error, stdout, stderr)
-        {
-            var ignoredFilesAndDirs = getFilesAndDirsFromGitCleanNDX(stdout);
-            //                            log.level = 'verbose';
-            if (log.level === 'verbose')
-            {// verbose -> print all ignored files, dirs
-                ignoredFilesAndDirs.forEach(
-                    function(ignoredFileOrDir)
-                    {
-                        log.verbose(ignoredFileOrDir);
-                    }
-                );
-            }
-            console.log('stderr: ' + stderr);
-            if (error !== null)
-            {
-                console.log('exec error: ' + error);
-            }
+    var gitIgnoredFilesAndDirsParsers = {
+        gitClean: {
+            cmd: 'git clean -ndX',
+            parser: getFilesAndDirsFromGitCleanNDX
         }
-    );
+    };
 
+    function getIgnoredFilesAndDirs(cmdAndParser)
+    {
+        child = exec(
+            cmdAndParser.cmd,
+            function(error, stdout, stderr)
+            {
+                var ignoredFilesAndDirs = cmdAndParser.parser(stdout);
+                //                log.level = 'verbose';
+                if (log.level === 'verbose')
+                {// verbose -> print all ignored files, dirs
+                    ignoredFilesAndDirs.forEach(
+                        function(ignoredFileOrDir)
+                        {
+                            log.verbose("file: " + ignoredFileOrDir);
+                        }
+                    );
+                }
+                if (!ignoredFilesAndDirs)
+                {// NO ignored files/dirs (failed) -> print errors
+                    if (stderr)
+                    {
+                        log.error('stderr: ' + stderr);
+                    }
+                    if (error)
+                    {
+                        log.error('exec error: ' + error);
+                    }
+                }
+            }
+        );
+    }
+
+    getIgnoredFilesAndDirs(gitIgnoredFilesAndDirsParsers.gitClean);
 };

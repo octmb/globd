@@ -2,7 +2,7 @@
 <html>
 <head>
    <title>globd</title>
-
+   <script src="http://underscorejs.org/underscore-min.js"></script>
    <link rel="stylesheet" href="css/bootstrap.css"/>
    <link rel="stylesheet" href="css/glob.css"/>
    <link rel="icon" href="favicon.ico" type="image/x-icon"/>
@@ -22,107 +22,9 @@
 
    <script src="/socket.io/socket.io.js"></script>
    <script src="js/vendor/jquery-2.1.1.js"></script>
-   <script type="text/javascript">
-      // "Hello {0}.".format("there") -> "Hello there."
-      if (!String.prototype.format)
-      {
-         String.prototype.format = function()
-         {
-            var args = arguments;
-            return this.replace(/{(\d+)}/g, function(match, number)
-            {
-               return typeof args[number] != 'undefined'
-                     ? args[number]
-                     : match
-                     ;
-            });
-         };
-      }
-   </script>
-
-   <script type="text/javascript">
-      // "model"
-      var socket = io();
-
-      function sendPatterns(globPatterns)
-      {
-         // 1. hook server event: 'glob.result:{pattern}' (e.g. 'glob.result:js/vendor')
-         //      client.onReceiveResult -> use result to render view
-         // 2. send pattern to server
-         socket.on('glob.result:' + globPatterns, function(result)
-         {
-            renderView(result);
-         });
-         socket.emit('glob', globPatterns);
-      }
-   </script>
-   <script type="text/javascript">
-      // "view"
-
-      var $filesView = $('#files');
-      var $body = $('body');
-      var $error = $body.filter('#error');
-
-      function renderView(result)
-      {
-         function getFileListItems(result)
-         {
-            var fileElements = [];
-            for (var i = 0; i < result.length; i++)
-            {
-               var globResult = result[i];
-               if (globResult.error)
-               {
-                  console.log(globResult.error);
-                  $error.text(globResult.error);
-               }
-               else
-               {
-                  fileElements = fileElements.concat(
-                        globResult.files.map(
-                              function(filePath)
-                              {
-                                 return $('<li></li>')
-                                       .addClass("glob-result")
-                                       .data('glob-pattern-index', i)
-                                       .text(filePath);
-                              }
-                        )
-                  );
-
-               }
-            }
-            return fileElements;
-         }
-
-         // <li class="glob-result" data-glob-pattern-index="0">js/vendor</li>
-         // create elements first, then 'inject' all at once
-         $filesView.html(getFileListItems(result));
-
-         var pattern = result[0].pattern;
-         document.title = pattern === "" ? "globd" : "globd - {0}".format(pattern);
-      }
-
-
-   </script>
-   <script>
-      var globPatterns = []; //? don't store state (get from every input, on every keypress)
-
-      // OnPatternChanged -> get pattern; send to server
-      $('#glob-patterns').on(
-            'keyup', 'input.pattern', function(event)
-            {
-               var $currentPatternInput = $(this);
-               var inputIndex = $currentPatternInput.data('glob-pattern-index');
-               if (typeof inputIndex === 'undefined')
-               {
-                  throw Error("glob input key-up: couldn't get glob-pattern-index for input");
-               }
-               event.preventDefault();
-               globPatterns[inputIndex] = $currentPatternInput.val();
-               sendPatterns(globPatterns);
-            }
-      );
-   </script>
+   <script src="js/format.js"></script>
+   <script src="js/model.js"></script>
+   <script src="js/view.js"></script>
+   <script src="js/globPatterns.js"></script>
 </body>
 </html>
